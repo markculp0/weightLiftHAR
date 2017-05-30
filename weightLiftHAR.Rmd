@@ -1,0 +1,22 @@
+---
+title: "Weight Lifting, Human Activity Recognition (HAR)"
+author: "Mark Culp"
+date: "May 29, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load Training Set Data
+
+```{r}
+
+
+
+```
+
+## Including Plots
+
+
