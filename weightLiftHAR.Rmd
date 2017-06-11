@@ -6,17 +6,113 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
 ```
 
+### Load Test and Training Set Data
+
+```{r cache=TRUE}
+
 ## Load Training Set Data
+training <- read.csv("../data/pml-training.csv")
+
+## Load Testing Set Data
+testing <- read.csv("../data/pml-testing.csv")
+
+
+```
+
+### Exploratory Analysis
+
+```{r}
+
+## Explore set dimensions
+dim(training)
+dim(testing )
+
+# Identify set column name differences
+trainCol <- names(training)
+testCol <- names(testing)
+setdiff(trainCol, testCol)
+setdiff(testCol, trainCol)
+
+# Assess numbers in each class
+table(training$classe)
+
+# Examine grouping of test data
+testing$problem_id
+
+## Get 6 user names
+unique(sort(training$user_name))
+
+```
+
+### Clean and Partition Data
+
+```{r warning=FALSE, message=FALSE}
+
+# Create function to assess number of NAs in data sets
+na_count <-function (x) sapply(x, function(y) sum(is.na(y)))
+
+# Identify columns that do no have primarily NA values
+boolNotNAs <- na_count(training) < 19000
+
+# Subset test and training sets to filter out 
+# primarily NA columns 
+train2 <- training[,boolNotNAs]
+test2 <- testing[,boolNotNAs]
+
+# Create function to assess number of blank
+# values in factor columns
+empty_count <-function (x) sapply(x, function(y) sum(y == ""))
+
+# Identify columns that do not have primarily
+# blank factor contents
+boolNotEmpty <- empty_count(train2) < 19000
+
+# Subset test and training sets to filter out 
+# columns with primarily blank factor contents
+train3 <- train2[,boolNotEmpty]
+test3 <- test2[,boolNotEmpty]
+
+# Filter out index, timeseries, and windowing columns
+train4 <- train3[,-c(1,3:7)] 
+test4 <- test3[,-c(1,3:7)] 
+rm(test3,train3)
+
+# Load caret for data partitioning
+library(caret)
+
+# Create validation test set
+inTrain <- createDataPartition(train4$classe, p=0.7, list = F)
+train4 <- train4[inTrain,]
+valid4 <- train4[-inTrain,]
+
+```
+
+We filter out the index, timeseries, and windowing columns in order to focus on the measurements rather than manner in which the measurements were collected.  
+
+### Train Model and Validate Preditions
+
+```{r message=F, warning=FALSE, cache=TRUE}
+
+# Load caret, randomForest
+library(caret)
+library(randomForest)
+
+
+
+
+
+```
+
+### Predictions on Test Set and Findings
 
 ```{r}
 
 
 
-```
 
-## Including Plots
+```
 
 
