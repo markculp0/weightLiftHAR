@@ -98,8 +98,14 @@ We filter out the index, timeseries, and windowing columns in order to focus on 
 
 # Load caret, randomForest
 library(caret)
-library(randomForest)
+# library(randomForest)
 
+ctrl <- trainControl(method = "oob")
+
+set.seed(1235)
+
+# Train model using Random Forest
+modFit <- train(classe ~ ., data = train4, method = "rf", prox = T, importance = T, trControl = ctrl)
 
 
 

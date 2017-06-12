@@ -159,8 +159,8 @@ unique(sort(training$user_name))</code></pre>
 <pre><code>## [1] adelmo   carlitos charles  eurico   jeremy   pedro   
 ## Levels: adelmo carlitos charles eurico jeremy pedro</code></pre>
 </div>
-<div id="clean-and-partition-data" class="section level2">
-<h2>Clean and Partition Data</h2>
+<div id="clean-and-partition-data" class="section level3">
+<h3>Clean and Partition Data</h3>
 <pre class="r"><code># Create function to assess number of NAs in data sets
 na_count &lt;-function (x) sapply(x, function(y) sum(is.na(y)))
 
@@ -199,14 +199,21 @@ train4 &lt;- train4[inTrain,]
 valid4 &lt;- train4[-inTrain,]</code></pre>
 <p>We filter out the index, timeseries, and windowing columns in order to focus on the measurements rather than manner in which the measurements were collected.</p>
 </div>
-<div id="train-model-and-validate-preditions" class="section level2">
-<h2>Train Model and Validate Preditions</h2>
+<div id="train-model-and-validate-preditions" class="section level3">
+<h3>Train Model and Validate Preditions</h3>
 <pre class="r"><code># Load caret, randomForest
 library(caret)
-library(randomForest)</code></pre>
+# library(randomForest)
+
+ctrl &lt;- trainControl(method = &quot;oob&quot;)
+
+set.seed(1235)
+
+# Train model using Random Forest
+modFit &lt;- train(classe ~ ., data = train4, method = &quot;rf&quot;, prox = T, importance = T, trControl = ctrl)</code></pre>
 </div>
-<div id="predictions-on-test-set-and-findings" class="section level2">
-<h2>Predictions on Test Set and Findings</h2>
+<div id="predictions-on-test-set-and-findings" class="section level3">
+<h3>Predictions on Test Set and Findings</h3>
 </div>
 
 

@@ -101,10 +101,14 @@ rm(inTrain)
 ## Train Model and Validate Preditions
 ## ============================================
 # Load caret, randomForest
-library(randomForest)
+# library(randomForest)
+
+ctrl <- trainControl(method = "oob")
+
+set.seed(1235)
 
 # Train model using Random Forest
-modFit <- train(classe ~ ., data = train4, method = "rf", prox = T)
+modFit <- train(classe ~ ., data = train4, method = "rf", prox = T, importance = T, trControl = ctrl)
 
 
 
