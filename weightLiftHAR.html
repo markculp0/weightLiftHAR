@@ -124,6 +124,11 @@ $(document).ready(function () {
 </div>
 
 
+<div id="executive-summary" class="section level3">
+<h3>Executive Summary</h3>
+<p>The goal of this project was to predict the manner in which six individuals performed various exercises based on accelerometer readings taken during their exercises. The authors of the study developed a five-tier classification system which ranked the quality of the participants’ weight lifting exercises.</p>
+<p>The Random Forest algorithm was used to predict the ranking of 20 different test cases based on accelerometer readings taken from the belt, forearm, arm, and dumbell of the six study participants. Testing conducted on the validation set used in this study returned a 99% to 100% estimated, out-of-sample accuracy for our model.</p>
+</div>
 <div id="load-test-and-training-set-data" class="section level3">
 <h3>Load Test and Training Set Data</h3>
 <pre class="r"><code>## Load Training Set Data
@@ -197,10 +202,11 @@ library(caret)
 inTrain &lt;- createDataPartition(train4$classe, p=0.7, list = F)
 train4 &lt;- train4[inTrain,]
 valid4 &lt;- train4[-inTrain,]</code></pre>
-<p>We filter out the index, timeseries, and windowing columns in order to focus on the measurements rather than manner in which the measurements were collected.</p>
+<p>Our initial test and training data sets each contain 160 variables. We are able to reduce the number of variables of concern to 93 by filtering out continuous training set variables with over 19,000 (97%) NA values. We are able to further reduce the number of variables of concern to 60 by filtering out factor variables with over 19,000 (97%) empty string values.</p>
+<p>We filter out 6 more variables by eliminating the index, timeseries, and windowing columns. We do this in order to focus on the accelerometer measurements rather than the manner in which these measurements were collected.</p>
 </div>
-<div id="train-model-and-validate-preditions" class="section level3">
-<h3>Train Model and Validate Preditions</h3>
+<div id="train-model-and-validate-predictions" class="section level3">
+<h3>Train Model and Validate Predictions</h3>
 <pre class="r"><code># Load caret, randomForest
 library(caret)
 # library(randomForest)
@@ -210,10 +216,67 @@ ctrl &lt;- trainControl(method = &quot;oob&quot;)
 set.seed(1235)
 
 # Train model using Random Forest
-modFit &lt;- train(classe ~ ., data = train4, method = &quot;rf&quot;, prox = T, importance = T, trControl = ctrl)</code></pre>
+modFit &lt;- train(classe ~ ., data = train4, method = &quot;rf&quot;, prox = T, importance = T, trControl = ctrl)
+
+# Predict outcomes on the validation set 
+predValid &lt;- predict(modFit, newdata = valid4)
+
+# Assess prediction accuracy
+confusionMatrix(predValid, valid4$classe)</code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction    A    B    C    D    E
+##          A 1191    0    0    0    0
+##          B    0  788    0    0    0
+##          C    0    0  712    0    0
+##          D    0    0    0  702    0
+##          E    0    0    0    0  722
+## 
+## Overall Statistics
+##                                      
+##                Accuracy : 1          
+##                  95% CI : (0.9991, 1)
+##     No Information Rate : 0.2894     
+##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16  
+##                                      
+##                   Kappa : 1          
+##  Mcnemar's Test P-Value : NA         
+## 
+## Statistics by Class:
+## 
+##                      Class: A Class: B Class: C Class: D Class: E
+## Sensitivity            1.0000   1.0000    1.000   1.0000   1.0000
+## Specificity            1.0000   1.0000    1.000   1.0000   1.0000
+## Pos Pred Value         1.0000   1.0000    1.000   1.0000   1.0000
+## Neg Pred Value         1.0000   1.0000    1.000   1.0000   1.0000
+## Prevalence             0.2894   0.1915    0.173   0.1706   0.1755
+## Detection Rate         0.2894   0.1915    0.173   0.1706   0.1755
+## Detection Prevalence   0.2894   0.1915    0.173   0.1706   0.1755
+## Balanced Accuracy      1.0000   1.0000    1.000   1.0000   1.0000</code></pre>
+<pre class="r"><code># Calculate the error rate of preditions
+sum(predValid != valid4$classe)/length(predValid)</code></pre>
+<pre><code>## [1] 0</code></pre>
+<p>The random forest algorithm builds multiple classification trees it uses to select the correct prediction for a given set of input vectors. The trees “vote” on the final classification for each outcome, and the classification receiving the most votes wins. According to Leo Breiman and Adele Cutler, the authors of the algorithm, random forests are unexcelled in accuracy among the current algorithms. It was selected for this test because the algorithm works efficiently on large databases, and can handle thousands of input variables.</p>
+<p>According to Breiman and Cutler, there is no need for cross-validation or a separate test set to get an unbiased estimate of the test set error. An out-of-bag (oob) error estimate is constructed at run time using about one-third of the test cases which are omitted from the bootstrap sample. The authors indicate these estimates to be unbiased in many tests.</p>
+<p>Our own confusion matrix test of the HAR validation set resulted in a 99% to 100% accuracy rate in predictions on the five Class categories used to assess exercise performance. As reflected by our misclassification calculation above, this results in a negligible out-of-sample error rate.</p>
 </div>
 <div id="predictions-on-test-set-and-findings" class="section level3">
 <h3>Predictions on Test Set and Findings</h3>
+<pre class="r"><code>library(caret)
+
+# Predict outcomes on the validation set 
+predTest &lt;- predict(modFit, newdata = test4)
+
+# Predictions for the 20 test cases were as
+# follows:
+predTest</code></pre>
+<pre><code>##  [1] B A B A A E D B A A B C B A E E A B B B
+## Levels: A B C D E</code></pre>
+<p>The random forest model resulted in the above listed 20 predictions for the test set provided for this exercise. We estimate an out-of-sample error rate of less than 1% using the Random Forest algorithm.</p>
+<p>References:</p>
+<p>Random Forests, Leo Breiman and Adele Cutler, Random Forests(tm) is a trademark of Leo Breiman and Adele Cutler and is licensed exclusively to Salford Systems for the commercial release of their software.</p>
+<p>Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H. Qualitative Activity Recognition of Weight Lifting Exercises. Proceedings of 4th International Conference in Cooperation with SIGCHI (Augmented Human ’13) . Stuttgart, Germany: ACM SIGCHI, 2013.</p>
 </div>
 
 

@@ -98,7 +98,7 @@ rm(inTrain)
 # trainClass <- sapply(train3, class)
 
 ## ============================================
-## Train Model and Validate Preditions
+## Train Model and Validate Predictions
 ## ============================================
 # Load caret, randomForest
 # library(randomForest)
@@ -110,11 +110,24 @@ set.seed(1235)
 # Train model using Random Forest
 modFit <- train(classe ~ ., data = train4, method = "rf", prox = T, importance = T, trControl = ctrl)
 
+# Predict outcomes on the validation set 
+predValid <- predict(modFit, newdata = valid4)
 
+# Assess prediction accuracy
+confusionMatrix(predValid, valid4$classe)
+
+# Calculate the error rate of preditions
+sum(predValid != valid4$classe)/length(predValid)
 
 ## ============================================
 ## Predictions on Test Set and Findings
 ## ============================================
 
 
+# Predict outcomes on the validation set 
+predTest <- predict(modFit, newdata = test4)
+
+# Predictions for the 20 test cases were as
+# follows:
+predTest
 
