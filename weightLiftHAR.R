@@ -110,6 +110,9 @@ set.seed(1235)
 # Train model using Random Forest
 modFit <- train(classe ~ ., data = train4, method = "rf", prox = T, importance = T, trControl = ctrl)
 
+# Assess importance of top 20 variables
+varImp(modFit)
+
 # Predict outcomes on the validation set 
 predValid <- predict(modFit, newdata = valid4)
 
@@ -131,3 +134,10 @@ predTest <- predict(modFit, newdata = test4)
 # follows:
 predTest
 
+# View histogram of predicted class outcome
+# counts in the test data
+qplot(predTest, main = "Predicted Class Counts in Test Data")
+
+# View histogram of class outcome
+# counts in the training data
+qplot(training$classe, main = "Class Counts in Training Data")

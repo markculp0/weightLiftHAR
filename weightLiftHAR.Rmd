@@ -1,7 +1,7 @@
 ---
 title: "Weight Lifting, Human Activity Recognition (HAR)"
 author: "Mark Culp"
-date: "May 29, 2017"
+date: "June 13, 2017"
 output: html_document
 ---
 
@@ -10,9 +10,9 @@ knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
 ```
 ### Executive Summary
 
-The goal of this project was to predict the manner in which six individuals performed various exercises based on accelerometer readings taken during their exercises.  The authors of the study developed a five-tier classification system which ranked the quality of the participants' weight lifting exercises.  
+The goal of this project was to predict the manner in which six individuals performed various weight lifting exercises based on accelerometer readings taken during their exercises.  The authors of the study developed a five-tier classification system which ranked the quality of the participants'  exercises.  
 
-The Random Forest algorithm was used to predict the ranking of 20 different test cases based on accelerometer readings taken from the belt, forearm, arm, and dumbell of the six study participants.  Testing conducted on the validation set used in this study returned a 99% to 100% estimated, out-of-sample accuracy for our model.  
+The Random Forest algorithm was used to predict the ranking of 20 different test cases based on accelerometer readings taken from the belt, forearm, arm, and dumbell of the six study participants.  Testing conducted on the validation set used in this study returned a 99.9% to 100% estimated, out-of-sample accuracy for our model at the 95% confidence level.  
 
 
 ### Load Test and Training Set Data
@@ -30,7 +30,9 @@ testing <- read.csv("../data/pml-testing.csv")
 
 ### Exploratory Analysis
 
-```{r}
+```{r fig.width=3, fig.height=3, fig.align='center'}
+library(knitr)
+library(ggplot2)
 
 ## Explore set dimensions
 dim(training)
@@ -42,16 +44,24 @@ testCol <- names(testing)
 setdiff(trainCol, testCol)
 setdiff(testCol, trainCol)
 
-# Assess numbers in each class
-table(training$classe)
-
 # Examine grouping of test data
 testing$problem_id
 
 ## Get 6 user names
 unique(sort(training$user_name))
 
+# Assess numbers in each class
+table(training$classe)
+
+# View histogram of class outcome
+# counts in the training data
+qplot(training$classe, main = "Training Class Counts")
+
 ```
+
+The five-tier classification system developed by the authors of the study awarded an "A" classification for weight lifting performed according to the specification; a "B" for situations where the participant threw their elbows to the front; a "C"  for lifting the dumbbell only halfway; a "D" for lowering the dumbbell only halfway; and an "E" for throwing the hips to the front.  As can be seen in the above table, there are about 20% more exercise measurements classified as Class "A" quality than any of the other four classes, but the range of classes in the other four categories of training data is fairly evenly dispersed.  
+
+We have six test participants whose first names are listed above.  The training and testing sets both have 160 variables.  Only one variable differs between the two sets: training has a variable named "classe", and testing has a variable named "problem_id." 
 
 ### Clean and Partition Data
 
@@ -96,7 +106,7 @@ valid4 <- train4[-inTrain,]
 
 ```
 
-Our initial test and training data sets each contain 160 variables.  We are able to reduce the number of variables of concern to 93 by filtering out continuous training set variables with over 19,000 (97%) NA values.  We are able to further reduce the number of variables of concern to 60 by filtering out factor variables with over 19,000 (97%) empty string values.  
+We are able to reduce the number of variables of concern from 160 to 93 by filtering out continuous training set variables with over 19,000 (97%) NA values.  We are able to further reduce the number of variables of concern to 60 by filtering out factor variables with over 19,000 (97%) empty string values.  
 
 We filter out 6 more variables by eliminating the index, timeseries, and windowing columns.  We do this in order to focus on the accelerometer measurements rather than the manner in which these measurements were collected.  
 
@@ -115,6 +125,9 @@ set.seed(1235)
 # Train model using Random Forest
 modFit <- train(classe ~ ., data = train4, method = "rf", prox = T, importance = T, trControl = ctrl)
 
+# Assess importance of top 20 variables
+varImp(modFit)
+
 # Predict outcomes on the validation set 
 predValid <- predict(modFit, newdata = valid4)
 
@@ -125,34 +138,40 @@ confusionMatrix(predValid, valid4$classe)
 sum(predValid != valid4$classe)/length(predValid)
 
 ```
-The random forest algorithm builds multiple classification trees it uses to select the correct prediction for a given set of input vectors.  The trees "vote" on the final classification for each outcome, and the classification receiving the most votes wins.  According to Leo Breiman and Adele Cutler, the authors of the algorithm, random forests are unexcelled in accuracy among the current algorithms.  It was selected for this test because the algorithm works efficiently on large databases, and can handle thousands of input variables.  
+The random forest algorithm builds multiple classification trees it uses to select the correct prediction for a given set of inputs.  The classification trees "vote" on the final classification for each case, and the classification receiving the most votes wins.  According to Leo Breiman and Adele Cutler, the authors of the algorithm, Random Forests are unexcelled in accuracy among the current algorithms.  The algorithm was selected for this test because the it works efficiently on large data sets, and can handle thousands of input variables.  
 
-According to Breiman and Cutler, there is no need for cross-validation or a separate test set to get an unbiased estimate of the test set error.  An out-of-bag (oob) error estimate is constructed at run time using about one-third of the test cases which are omitted from the bootstrap sample.  The authors indicate these estimates to be unbiased in many tests.  
+According to Breiman and Cutler, there is no need for cross-validation or a separate test set to get an unbiased estimate of test set error.  An out-of-bag (oob) error estimate is constructed at run time using about one-third of the test cases which are omitted from the bootstrap sample.  The authors have shown these estimates to be unbiased in many tests.  
 
-Our own confusion matrix test of the HAR validation set resulted in a 99% to 100% accuracy rate in predictions on the five Class categories used to assess exercise performance.  As reflected by our misclassification calculation above, this results in a negligible out-of-sample error rate.   
+The confusion matrix we ran on our validation set resulted in a 99.9% to 100% accuracy rate in predictions on the five class categories used to assess exercise performance at the 95% confidence level.  As reflected by our misclassification calculation, this results in a negligible out-of-sample error rate.
+
+We were also able to assess the importance of the top 20 variables used to assess outcomes across all classes using the "varImp" function from the caret package.
 
 
 ### Predictions on Test Set and Findings
 
-```{r}
+```{r fig.width=3, fig.height=3, fig.align='center'}
 
 library(caret)
 
 # Predict outcomes on the validation set 
 predTest <- predict(modFit, newdata = test4)
 
-# Predictions for the 20 test cases were as
-# follows:
+# Predicted outcomes for our 20 test cases were as follows:
 predTest
 
+# View histogram of predicted class outcome
+# counts in the test data
+qplot(predTest, main = "Predicted Test Class Counts")
 
 ```
 
-The random forest model resulted in the above listed 20 predictions for the test set provided for this exercise.  We estimate an out-of-sample error rate of less than 1% using the Random Forest algorithm.    
+The random forest model resulted in the above listed 20 predictions for the test set provided for this exercise.  We estimate a negligible out-of-sample error rate using the Random Forest algorithm.    
 
-References: 
+The predicted class counts are much more skewed in the set of 20 test cases.  The counts of cases assessed as Class A or Class B categories were far greater than the cases assessed at the other three categories.  
 
-Random Forests, Leo Breiman and Adele Cutler, Random Forests(tm) is a trademark of Leo Breiman and Adele Cutler and is licensed exclusively to Salford Systems for the commercial release of their software.
+### Citations: 
+
+Random Forests, Leo Breiman and Adele Cutler, Random Forests (tm) is a trademark of Leo Breiman and Adele Cutler.
 
 Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H. Qualitative Activity Recognition of Weight Lifting Exercises. Proceedings of 4th International Conference in Cooperation with SIGCHI (Augmented Human '13) . Stuttgart, Germany: ACM SIGCHI, 2013.
 
