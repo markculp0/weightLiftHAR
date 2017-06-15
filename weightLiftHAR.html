@@ -11,7 +11,7 @@
 
 <meta name="author" content="Mark Culp" />
 
-<meta name="date" content="2017-06-13" />
+<meta name="date" content="2017-06-14" />
 
 <title>Weight Lifting, Human Activity Recognition (HAR)</title>
 
@@ -119,7 +119,7 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">Weight Lifting, Human Activity Recognition (HAR)</h1>
 <h4 class="author"><em>Mark Culp</em></h4>
-<h4 class="date"><em>June 13, 2017</em></h4>
+<h4 class="date"><em>June 14, 2017</em></h4>
 
 </div>
 
@@ -131,7 +131,12 @@ $(document).ready(function () {
 </div>
 <div id="load-test-and-training-set-data" class="section level3">
 <h3>Load Test and Training Set Data</h3>
-<pre class="r"><code>## Load Training Set Data
+<pre class="r"><code>## Download training and test sets
+download.file(&quot;https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv&quot;, &quot;../data/pml-training.csv&quot;)
+
+download.file(&quot;https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv&quot;, &quot;../data/pml-testing.csv&quot;)
+
+## Load Training Set Data
 training &lt;- read.csv(&quot;../data/pml-training.csv&quot;)
 
 ## Load Testing Set Data
@@ -202,7 +207,6 @@ test3 &lt;- test2[,boolNotEmpty]
 # Filter out index, timeseries, and windowing columns
 train4 &lt;- train3[,-c(1,3:7)] 
 test4 &lt;- test3[,-c(1,3:7)] 
-rm(test3,train3)
 
 # Load caret for data partitioning
 library(caret)

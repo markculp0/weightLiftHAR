@@ -8,6 +8,10 @@
 ## Load Test and Training Set Data
 ## ============================================
 
+## Download training and test sets
+download.file("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv", "../data/pml-training.csv")
+download.file("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv", "../data/pml-testing.csv")
+
 ## Load Training Set Data
 training <- read.csv("../data/pml-training.csv")
 
